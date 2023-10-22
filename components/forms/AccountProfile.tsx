@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,7 +18,9 @@ import { Textarea } from "@/components/ui/textarea";
 import * as z from "zod";
 import Image from "next/image";
 import { isBase64Image } from "@/lib/utils";
-import {useUploadThing} from 
+import { useUploadThing } from "@/lib/uploadthing";
+import { updateUser } from "@/lib/actions/user.actions";
+import { usePathname, useRouter } from "next/navigation";
 
 interface IProps {
   user: {
@@ -35,6 +36,10 @@ interface IProps {
 
 const AccountProfile = ({ user, btnTitle }: IProps) => {
   const [files, setFiles] = useState<File[]>([]);
+  const { startUpload } = useUploadThing("media");
+  const router = useRouter();
+  const pathname = usePathname();
+
   const form = useForm({
     resolver: zodResolver(UserValidation),
     defaultValues: {
@@ -68,15 +73,34 @@ const AccountProfile = ({ user, btnTitle }: IProps) => {
     }
   };
 
+  const onSubmit = async (values: z.infer<typeof UserValidation>) => {
+    const blob = values.profile_photo;
+    const hasImageChange = isBase64Image(blob);
 
-  function onSubmit(values: z.infer<typeof UserValidation>) {
-  const blob = values.profile_photo
-  const hasImageChange = isBase64Image(blob)
+    if (hasImageChange) {
+      const imgRes = await startUpload(files);
 
-  if(hasImageChange) {
-    const images = 
-  }
-  }
+      if (imgRes && imgRes[0].url) {
+        values.profile_photo = imgRes[0].url;
+      }
+    }
+
+    // TODO: Update the user profile
+    await updateUser({
+      userId: user.id,
+      username: values.username,
+      bio: values.bio,
+      image: values.profile_photo,
+      name: values.name,
+      path: pathname,
+    });
+
+    if (pathname === "/profile/edit") {
+      router.back();
+    } else {
+      router.push("/");
+    }
+  };
 
   return (
     <Form {...form}>
@@ -118,6 +142,7 @@ const AccountProfile = ({ user, btnTitle }: IProps) => {
                   onChange={(e) => handleImage(e, field.onChange)}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -154,6 +179,7 @@ const AccountProfile = ({ user, btnTitle }: IProps) => {
                   {...field}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -172,6 +198,7 @@ const AccountProfile = ({ user, btnTitle }: IProps) => {
                   {...field}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
