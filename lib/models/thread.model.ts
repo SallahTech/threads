@@ -14,8 +14,8 @@ const ThreadSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   parentId: {
     type: String,
-    children: [{ type: mongoose.Schema.Types.ObjectId, ref: "Thread" }],
   },
+  children: [{ type: mongoose.Schema.Types.ObjectId, ref: "Thread" }],
 });
 
 const Thread = mongoose.models.Thread || mongoose.model("Thread", ThreadSchema);
