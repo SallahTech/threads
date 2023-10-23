@@ -7,7 +7,6 @@ interface IProps {
   currentUserId: string;
   parentId: string | null;
   content: string;
-  title: string;
   author: {
     id: string;
     name: string;
@@ -32,7 +31,6 @@ const ThreadCard = ({
   currentUserId,
   parentId,
   content,
-  title,
   author,
   community,
   createdAt,
@@ -65,7 +63,7 @@ const ThreadCard = ({
               </h4>
             </Link>
             <p className="mt-2 text-small-regular text-light-2">{content}</p>
-            <div className="mt-5 flex flex-col gap-3">
+            <div className={`${isComment && "mb-10"} mt-5 flex flex-col gap-3`}>
               <div className="flex gap-3.5">
                 <Image
                   src="/assets/heart-gray.svg"
